@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SIMPL3 8UTTON ALPHA 1.0</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: white;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            width: 100vw;
+            touch-action: manipulation;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+        
+        #fab {
+            position: fixed;
+            bottom: 15px;
+            right: 15px;
+            width: 45px;
+            height: 45px;
+            background: rgba(26, 26, 26, 0.6);
+            border: 2px solid #444;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0.5;
+            transition: opacity 0.2s, background 0.2s;
+        }
+        
+        #fab.active, #fab:active { opacity: 1; background: rgba(26, 26, 26, 0.95); }
+
+        #controls {
+            position: fixed;
+            bottom: 70px;
+            right: 15px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            background: rgba(26, 26, 26, 0.95);
+            padding: 15px;
+            border-radius: 15px;
+            border: 2px solid #333;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8);
+            z-index: 999;
+            backdrop-filter: blur(5px);
+        }
+        
+        #controls.show { display: flex; }
+
+        .menu-btn {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 14px;
+        }
+
+        .menu-btn.active-mode {
+            background: #d35400;
+            border: 2px solid #e67e22;
+        }
+
+        /* GRILLA FIJA 6 COLUMNAS x 4 FILAS (23 BOTONES, POSICIÓN 24 LIBRE) */
+        #deck {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            width: 98vw;
+            height: 96vh;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        /* ESTILO BASE DE BOTÓN */
+        .btn {
+            background-color: #141414;
+            border: 2px solid #222;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            font-weight: bold;
+            font-size: clamp(11px, 1.8vw, 14px);
+            white-space: pre-line;
+            cursor: pointer;
+            transition: transform 0.08s ease, filter 0.2s, box-shadow 0.2s;
+            padding: 6px;
+            box-sizing: border-box;
+            position: relative;
+            user-select: none;
+            touch-action: none;
+            overflow: hidden;
+        }
+
+        /* ESTILO TIPO PHOTOSHOP (NEÓN INTERIOR) PARA BOTONES ACTIVOS */
+        .btn:not(.empty):not(.btn-nav) {
+            background-color: #121212;
+            border: 2px solid var(--btn-color, #00d8ff);
+            box-shadow: inset 0 0 14px var(--btn-color, #00d8ff),
+                        inset 0 0 3px var(--btn-color, #00d8ff);
+            color: #ffffff;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+            filter: brightness(1.2);
+        }
+
+        /* CASILLEROS VACÍOS */
+        .btn.empty {
+            background: rgba(255, 255, 255, 0.015);
+            border: 1px dashed #222;
+            box-shadow: none;
+        }
+
+        /* MODO EDICIÓN */
+        body.edit-mode .btn:not(.btn-nav) {
+            border-style: dashed !important;
+        }
+        body.edit-mode .btn.empty {
+            border: 1px dashed #555;
+            background: rgba(230, 126, 34, 0.05);
+        }
+
+        /* BOTONES DE NAVEGACIÓN (PÁGINAS) */
+        .btn-nav {
+            background: #181818 !important;
+            border: 1px solid #333 !important;
+            color: #3498db;
+            box-shadow: none !important;
+        }
+
+        /* INDICADORES LED OBS */
+        .led {
+            width: 14px; height: 14px; border-radius: 50%;
+            border: 2px solid #222;
+            margin-bottom: 6px;
+            transition: background 0.3s, box-shadow 0.3s;
+        }
+        .led-on {
+            background: radial-gradient(circle at 35% 35%, #7bfb7b, #10b981, #047857);
+            box-shadow: 0 0 8px #10b981;
+        }
+        .led-off {
+            background: radial-gradient(circle at 35% 35%, #fca5a5, #ef4444, #991b1b);
+            box-shadow: 0 0 6px #ef4444;
+        }
+
+        /* MODALES */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .modal {
+            background: #1e1e1e; padding: 20px; border-radius: 12px; width: 85%; max-width: 350px;
+            border: 1px solid #444; display: flex; flex-direction: column; gap: 12px;
+        }
+        .modal h3 { margin: 0; text-align: center; font-size: 18px; }
+        .modal label { font-size: 13px; font-weight: bold; color: #aaa; }
+        .modal input, .modal select {
+            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444;
+            background: #2a2a2a; color: white; box-sizing: border-box; font-size: 15px;
+        }
+        .modal input[type="color"] { height: 40px; padding: 2px; cursor: pointer; }
+        .modal-btns { display: flex; gap: 8px; margin-top: 10px; }
+        .modal-btns button {
+            flex: 1; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;
+        }
+        .btn-cancel { background: #444; color: white; }
+        .btn-save { background: #10b981; color: white; }
+        .btn-delete { background: #b33939; color: white; }
+    </style>
+</head>
+<body>
+    
+    <div id="fab">⚙️</div>
+
+    <div id="controls">
+        <button class="menu-btn" id="btnToggleEdit" onclick="toggleEditMode()">✏️ Modo Edición: OFF</button>
+        <button class="menu-btn" onclick="openFolderModal()">📁 Nueva Carpeta</button>
+        <button class="menu-btn" onclick="openButtonModal()">🔲 Nuevo Botón</button>
+    </div>
+
+    <div id="deck"></div>
+
+    <!-- Modal Nueva Carpeta -->
+    <div class="modal-overlay" id="modalFolderOverlay">
+        <div class="modal">
+            <h3>Crear Carpeta</h3>
+            <div>
+                <label>Nombre de la carpeta</label>
+                <input type="text" id="folderName" placeholder="Ej: Mis Sonidos">
+            </div>
+            <div>
+                <label>Color Neón</label>
+                <input type="color" id="folderColor" value="#3498db">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
+                <button class="btn-save" onclick="saveFolder()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Nuevo Botón -->
+    <div class="modal-overlay" id="modalButtonOverlay">
+        <div class="modal">
+            <h3>Crear Botón</h3>
+            <div>
+                <label>Texto del Botón</label>
+                <input type="text" id="btnText" placeholder="Ej: Photoshop">
+            </div>
+            <div>
+                <label>Color Neón</label>
+                <input type="color" id="btnColor" value="#00d8ff">
+            </div>
+            <div>
+                <label>Acción</label>
+                <select id="btnType">
+                    <option value="atajo">Atajo de Teclado</option>
+                    <option value="programa">Abrir Programa/Archivo</option>
+                </select>
+            </div>
+            <div>
+                <label>Comando (Ej: ^c para Ctrl+C)</label>
+                <input type="text" id="btnCommand" placeholder="^c, {F1}, start notepad...">
+            </div>
+            <div class="modal-btns">
+                <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
+                <button class="btn-save" onclick="saveButton()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Editar / Eliminar -->
+    <div class="modal-overlay" id="modalEditOverlay">
+        <div class="modal">
+            <h3 id="editModalTitle">Editar Elemento</h3>
+            <input type="hidden" id="editBtnId">
+            <div>
+                <label>Texto del Botón</label>
+                <input type="text" id="editBtnText">
+            </div>
+            <div>
+                <label>Color Neón</label>
+                <input type="color" id="editBtnColor">
+            </div>
+            <div id="editActionFields">
+                <div>
+                    <label>Comando / Atajo</label>
+                    <input type="text" id="editBtnCommand">
+                </div>
+            </div>
+            <div class="modal-btns">
+                <button class="btn-delete" onclick="deleteCurrentButton()">🗑️</button>
+                <button class="btn-cancel" onclick="closeModals()">Cancelar</button>
+                <button class="btn-save" onclick="saveEditedButton()">Guardar</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allDecks = {};
+        let currentFolder = 'main';
+        let currentPage = 0;
+        let isEditMode = false;
+        let targetSlotIndex = null;
+        let obsPollInterval = null;
+
+        // Variables Drag & Drop y Doble Tap
+        let draggedGlobalIndex = null;
+        let touchGhost = null;
+        let lastTouchTime = 0;
+        let lastTouchSlot = null;
+
+        const fab = document.getElementById('fab');
+        const controls = document.getElementById('controls');
+
+        fab.addEventListener('pointerdown', (e) => {
+            e.stopPropagation();
+            controls.classList.toggle('show');
+            fab.classList.toggle('active');
+        });
+
+        document.body.addEventListener('pointerdown', (e) => {
+            if (!controls.contains(e.target) && e.target !== fab && !e.target.closest('.modal')) {
+                controls.classList.remove('show');
+                fab.classList.remove('active');
+            }
+        });
+
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            const btn = document.getElementById('btnToggleEdit');
+            if (isEditMode) {
+                btn.innerText = '✏️ Modo Edición: ON';
+                btn.classList.add('active-mode');
+                document.body.classList.add('edit-mode');
+            } else {
+                btn.innerText = '✏️ Modo Edición: OFF';
+                btn.classList.remove('active-mode');
+                document.body.classList.remove('edit-mode');
+            }
+            renderDeck(currentFolder, currentPage);
+        }
+
+        function ensureDeckSlots(folder) {
+            if (!allDecks[folder]) allDecks[folder] = [];
+            const minSize = (currentPage + 1) * 23;
+            while (allDecks[folder].length < minSize) {
+                allDecks[folder].push({ id: 'empty_' + Date.now() + '_' + Math.random(), type: 'empty' });
+            }
+        }
+
+        async function fetchOBSStatus() {
+            try {
+                const res = await fetch('/api/obs-status');
+                const data = await res.json();
+                if (!data.connected) return;
+
+                const updateBtn = (id, isMuted, textMuted, textOn) => {
+                    const btn = document.getElementById(id);
+                    if (btn) {
+                        const led = btn.querySelector('.led');
+                        const text = btn.querySelector('.btn-label');
+                        if (led && text) {
+                            led.className = isMuted ? 'led led-off' : 'led led-on';
+                            text.innerText = isMuted ? textMuted : textOn;
+                        }
+                    }
+                }
+
+                updateBtn('btn_obs_mic', data.micMuted, "Micrófono:\nDesactivado", "Micrófono:\nActivado");
+                updateBtn('btn_obs_desktop', data.desktopMuted, "Audio PC:\nDesactivado", "Audio PC:\nActivado");
+
+                const sceneBtn = document.getElementById('btn_obs_scene');
+                if (sceneBtn) {
+                    const text = sceneBtn.querySelector('.btn-label');
+                    if (text) text.innerText = `🎬 Escena Activa:\n${data.currentScene}`;
+                }
+            } catch (err) {}
+        }
+
+        function renderDeck(folderName, page = 0) {
+            currentFolder = folderName;
+            currentPage = page;
+            ensureDeckSlots(currentFolder);
+
+            const deckEl = document.getElementById('deck');
+            deckEl.innerHTML = '';
+            
+            if (obsPollInterval) {
+                clearInterval(obsPollInterval);
+                obsPollInterval = null;
+            }
+
+            const pageStartIndex = currentPage * 23;
+
+            for (let slot = 0; slot < 23; slot++) {
+                const globalIndex = pageStartIndex + slot;
+                const el = document.createElement('div');
+                el.className = 'btn';
+                el.dataset.globalIndex = globalIndex;
+
+                // NAVEGACIÓN: SIGUIENTE PÁGINA (SLOT 22)
+                if (slot === 22) {
+                    el.classList.add('btn-nav');
+                    el.innerText = `➡️ Pág. ${currentPage + 2}`;
+                    el.addEventListener('pointerdown', () => renderDeck(currentFolder, currentPage + 1));
+                    deckEl.appendChild(el);
+                    continue;
+                }
+
+                // NAVEGACIÓN: ANTERIOR PÁGINA (SLOT 21 EN PÁGINAS > 0)
+                if (slot === 21 && currentPage > 0) {
+                    el.classList.add('btn-nav');
+                    el.innerText = `⬅️ Pág. ${currentPage}`;
+                    el.addEventListener('pointerdown', () => renderDeck(currentFolder, currentPage - 1));
+                    deckEl.appendChild(el);
+                    continue;
+                }
+
+                const btnData = allDecks[currentFolder][globalIndex] || { type: 'empty' };
+
+                if (!btnData || btnData.type === 'empty') {
+                    el.classList.add('empty');
+                } else {
+                    el.id = btnData.id;
+                    
+                    // ASIGNAR COLOR NEÓN AL BORDERO E ILUMINACIÓN INTERIOR
+                    if (btnData.color) {
+                        el.style.setProperty('--btn-color', btnData.color);
+                    } else {
+                        el.style.setProperty('--btn-color', '#00d8ff'); // Color cian por defecto
+                    }
+
+                    if (currentFolder === 'obs' && btnData.type === 'obs' && btnData.id !== 'btn_obs_scene') {
+                        const led = document.createElement('div');
+                        led.className = 'led led-off';
+                        el.appendChild(led);
+                    }
+
+                    const label = document.createElement('span');
+                    label.className = 'btn-label';
+                    label.innerText = btnData.text || '';
+                    el.appendChild(label);
+                }
+
+                // EJECUCIÓN EN MODO NORMAL (UN CLIC / TAP)
+                el.addEventListener('pointerdown', async (e) => {
+                    if (isEditMode) return;
+
+                    if (btnData.type === 'folder') {
+                        renderDeck(btnData.target, 0);
+                    } else if (btnData.type !== 'empty') {
+                        await fetch('/api/execute', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(btnData)
+                        });
+                        if (currentFolder === 'obs') {
+                            setTimeout(fetchOBSStatus, 150);
+                        }
+                    }
+                });
+
+                // DOBLE CLIC EN MODO EDICIÓN (ESCRITORIO)
+                el.addEventListener('dblclick', () => {
+                    if (!isEditMode) return;
+                    triggerConfigureModal(globalIndex, btnData);
+                });
+
+                // ARRASTRAR Y DOBLE TAP (MODO EDICIÓN)
+                if (isEditMode) {
+                    attachDragAndTouchEvents(el, globalIndex, btnData);
+                }
+
+                deckEl.appendChild(el);
+            }
+
+            if (currentFolder === 'obs') {
+                fetchOBSStatus();
+                obsPollInterval = setInterval(fetchOBSStatus, 800);
+            }
+        }
+
+        function triggerConfigureModal(globalIndex, btnData) {
+            targetSlotIndex = globalIndex;
+            if (!btnData || btnData.type === 'empty') {
+                openButtonModal();
+            } else if (!btnData.id.startsWith('back_')) {
+                openEditModal(btnData);
+            } else {
+                alert("El botón de regresar no se puede editar.");
+            }
+        }
+
+        // SISTEMA DE ARRASTRE Y DOBLE TAP TÁCTIL
+        function attachDragAndTouchEvents(el, globalIndex, btnData) {
+            // Arrastre con Mouse
+            el.draggable = true;
+            el.addEventListener('dragstart', (e) => {
+                if (!isEditMode) return;
+                draggedGlobalIndex = globalIndex;
+                e.dataTransfer.setData('text/plain', globalIndex);
+                el.style.opacity = '0.4';
+            });
+            el.addEventListener('dragend', () => { el.style.opacity = '1'; draggedGlobalIndex = null; });
+            el.addEventListener('dragover', (e) => e.preventDefault());
+            el.addEventListener('drop', (e) => {
+                e.preventDefault();
+                const sourceIdx = parseInt(e.dataTransfer.getData('text/plain'));
+                if (!isNaN(sourceIdx) && sourceIdx !== globalIndex) {
+                    swapButtons(sourceIdx, globalIndex);
+                }
+            });
+
+            // Arrastre y Doble Tap Táctil
+            let touchStartPos = { x: 0, y: 0 };
+            let touchMoved = false;
+
+            el.addEventListener('touchstart', (e) => {
+                if (!isEditMode) return;
+                const touch = e.touches[0];
+                touchStartPos = { x: touch.clientX, y: touch.clientY };
+                touchMoved = false;
+                draggedGlobalIndex = globalIndex;
+
+                touchGhost = el.cloneNode(true);
+                touchGhost.style.position = 'fixed';
+                touchGhost.style.pointerEvents = 'none';
+                touchGhost.style.opacity = '0.8';
+                touchGhost.style.zIndex = '3000';
+                touchGhost.style.width = el.offsetWidth + 'px';
+                touchGhost.style.height = el.offsetHeight + 'px';
+                touchGhost.style.left = (touch.clientX - el.offsetWidth / 2) + 'px';
+                touchGhost.style.top = (touch.clientY - el.offsetHeight / 2) + 'px';
+                document.body.appendChild(touchGhost);
+
+                el.style.opacity = '0.3';
+            }, { passive: false });
+
+            el.addEventListener('touchmove', (e) => {
+                if (draggedGlobalIndex === null || !touchGhost) return;
+                const touch = e.touches[0];
+                const dist = Math.hypot(touch.clientX - touchStartPos.x, touch.clientY - touchStartPos.y);
+                
+                if (dist > 10) touchMoved = true;
+
+                if (touchMoved) {
+                    e.preventDefault();
+                    touchGhost.style.left = (touch.clientX - touchGhost.offsetWidth / 2) + 'px';
+                    touchGhost.style.top = (touch.clientY - touchGhost.offsetHeight / 2) + 'px';
+                }
+            }, { passive: false });
+
+            el.addEventListener('touchend', (e) => {
+                if (!isEditMode) return;
+
+                if (touchGhost) {
+                    touchGhost.remove();
+                    touchGhost = null;
+                }
+                el.style.opacity = '1';
+
+                const now = Date.now();
+                const timeDiff = now - lastTouchTime;
+
+                // DETECCIÓN DE DOBLE TAP
+                if (!touchMoved && lastTouchSlot === globalIndex && timeDiff < 350 && timeDiff > 0) {
+                    draggedGlobalIndex = null;
+                    lastTouchTime = 0;
+                    lastTouchSlot = null;
+                    triggerConfigureModal(globalIndex, btnData);
+                    return;
+                }
+
+                lastTouchTime = now;
+                lastTouchSlot = globalIndex;
+
+                // INTERCAMBIAR BOTONES AL SOLTAR ARRASTRE TÁCTIL
+                if (touchMoved && draggedGlobalIndex !== null) {
+                    const touch = e.changedTouches[0];
+                    const targetEl = document.elementFromPoint(touch.clientX, touch.clientY);
+                    if (targetEl) {
+                        const btnEl = targetEl.closest('.btn');
+                        if (btnEl && btnEl.dataset.globalIndex !== undefined) {
+                            const targetIdx = parseInt(btnEl.dataset.globalIndex);
+                            if (!isNaN(targetIdx) && targetIdx !== draggedGlobalIndex) {
+                                swapButtons(draggedGlobalIndex, targetIdx);
+                            }
+                        }
+                    }
+                }
+
+                draggedGlobalIndex = null;
+            });
+        }
+
+        async function swapButtons(fromIndex, toIndex) {
+            ensureDeckSlots(currentFolder);
+            const temp = allDecks[currentFolder][fromIndex];
+            allDecks[currentFolder][fromIndex] = allDecks[currentFolder][toIndex];
+            allDecks[currentFolder][toIndex] = temp;
+
+            await fetch('/api/save-deck', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ folderId: currentFolder, buttons: allDecks[currentFolder] })
+            });
+
+            renderDeck(currentFolder, currentPage);
+        }
+
+        async function loadData() {
+            const response = await fetch('/api/buttons');
+            allDecks = await response.json();
+            renderDeck(currentFolder, currentPage);
+        }
+        
+        // MODALES
+        function openFolderModal() {
+            document.getElementById('modalFolderOverlay').style.display = 'flex';
+            controls.classList.remove('show');
+            fab.classList.remove('active');
+        }
+
+        function openButtonModal() {
+            document.getElementById('modalButtonOverlay').style.display = 'flex';
+            controls.classList.remove('show');
+            fab.classList.remove('active');
+        }
+
+        function openEditModal(btn) {
+            document.getElementById('editBtnId').value = btn.id;
+            document.getElementById('editBtnText').value = btn.text || '';
+            document.getElementById('editBtnColor').value = btn.color || '#00d8ff';
+
+            const actionFields = document.getElementById('editActionFields');
+            if (btn.type === 'folder') {
+                actionFields.style.display = 'none';
+                document.getElementById('editModalTitle').innerText = 'Editar Carpeta';
+            } else {
+                actionFields.style.display = 'block';
+                document.getElementById('editModalTitle').innerText = 'Editar Botón';
+                document.getElementById('editBtnCommand').value = btn.keys || btn.command || '';
+            }
+
+            document.getElementById('modalEditOverlay').style.display = 'flex';
+        }
+
+        function closeModals() {
+            document.getElementById('modalFolderOverlay').style.display = 'none';
+            document.getElementById('modalButtonOverlay').style.display = 'none';
+            document.getElementById('modalEditOverlay').style.display = 'none';
+            
+            document.getElementById('folderName').value = '';
+            document.getElementById('btnText').value = '';
+            document.getElementById('btnCommand').value = '';
+            targetSlotIndex = null;
+        }
+
+        // GUARDAR Y EDITAR
+        async function saveFolder() {
+            const name = document.getElementById('folderName').value;
+            const color = document.getElementById('folderColor').value;
+            if (!name) return alert("Escribe un nombre");
+
+            const folderId = 'custom_' + Date.now();
+            
+            await fetch('/api/add-folder', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ parentFolder: currentFolder, folderId: folderId, text: name, color: color, targetIndex: targetSlotIndex })
+            });
+
+            closeModals();
+            loadData();
+        }
+
+        async function saveButton() {
+            const text = document.getElementById('btnText').value;
+            const color = document.getElementById('btnColor').value;
+            const type = document.getElementById('btnType').value;
+            const command = document.getElementById('btnCommand').value;
+            
+            if (!text || !command) return alert("Completa todos los campos");
+
+            const newBtn = {
+                id: 'btn_' + Date.now(),
+                text: text,
+                color: color,
+                type: type,
+            };
+
+            if (type === 'atajo') {
+                newBtn.keys = command;
+            } else {
+                newBtn.command = command;
+            }
+
+            await fetch('/api/add-button', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ folderId: currentFolder, button: newBtn, targetIndex: targetSlotIndex })
+            });
+
+            closeModals();
+            loadData();
+        }
+
+        async function saveEditedButton() {
+            const id = document.getElementById('editBtnId').value;
+            const text = document.getElementById('editBtnText').value;
+            const color = document.getElementById('editBtnColor').value;
+            const command = document.getElementById('editBtnCommand').value;
+
+            const existingBtn = allDecks[currentFolder].find(b => b && b.id === id);
+            if (!existingBtn) return;
+
+            const updatedBtn = { ...existingBtn, text, color };
+            if (existingBtn.type === 'atajo') updatedBtn.keys = command;
+            if (existingBtn.type === 'programa') updatedBtn.command = command;
+
+            await fetch('/api/update-button', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ folderId: currentFolder, button: updatedBtn })
+            });
+
+            closeModals();
+            loadData();
+        }
+
+        async function deleteCurrentButton() {
+            const id = document.getElementById('editBtnId').value;
+            if (confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
+                await fetch('/api/delete-button', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ folderId: currentFolder, buttonId: id })
+                });
+
+                closeModals();
+                loadData();
+            }
+        }
+
+        // Inicio
+        loadData();
+    </script>
+</body>
+</html>
