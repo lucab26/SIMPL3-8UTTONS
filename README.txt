@@ -1,6 +1,10 @@
-# SIMPL3 8UTTON - ALPHA 1.0
+# SIMPL3 8UTTONS - ALPHA 1.0
 
 Aplicación interactiva de servidor para programación rápida de botones y automatización de atajos de teclado.
+
+### I M P O R T A N T E ###
+
+DEBES TENER INSTALADO NODE.JS en tu PC. Sin esto, tu computadora no puede ejecutar código JavaScript.
 
 ## 🚀 Cómo Iniciar el Programa
 
