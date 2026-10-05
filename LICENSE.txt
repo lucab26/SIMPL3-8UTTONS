@@ -1,0 +1,17 @@
+CONTRATO DE LICENCIA CREATIVE COMMONS
+
+Este proyecto (SIMPL3 8UTTONS) está protegido bajo la licencia Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0).
+
+Usted es libre de:
+- Compartir: Copiar y redistribuir el material en cualquier medio o formato.
+- Adaptar: Mezclar, transformar y crear a partir del material para cualquier propósito.
+
+Bajo las siguientes condiciones:
+- Atribución (BY): Debe otorgar el crédito correspondiente, proporcionar un enlace a la licencia e indicar si se realizaron cambios.
+- No Comercial (NC): No puede utilizar el material con fines comerciales.
+- Compartir Igual (SA): Si remezcla, transforma o crea a partir del material, debe distribuir sus contribuciones bajo la misma licencia que el original.
+
+Para ver una copia completa de esta licencia, visite:
+https://creativecommons.org
+
+Copyright (c) 2026 lucab26. Todos los derechos reservados.
