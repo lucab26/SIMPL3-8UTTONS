@@ -28,11 +28,12 @@ Lo principal para que se vincule con la botonera es tener abierto OBS ANTES de i
 
 EN OBS:
 1. En la barra de arriba, vamos a Herramientas > Ajustes del Servidor WebSocket > Marcá la primera opción que dice "Habilitar servidor WebSocket" > Mostrar más información de conexión > Clickea el botón de Copiar en "Contraseña del servidor".
-2. Ejecutar el programa y cerrarlo. Apretar la tecla WIN + R y en el cuadrito de ejectuar escribí "%appdata%", bajá hasta el fondo y dale Click derecho > Editar al archivo con el nombre "simpl3_config.json".
-3. El archivo especifica dónde pegar la clave, borrá ese texto dejando las comillas (" ") y pegá la clave adentro.
-4. Ejecutar el programa nuevamente (con el OBS abierto antes de abrir la app) y ya va a estar vinculado.
+***NUEVO***
+2. Abrí el programa, clickeá en "⚙️" y seleccioná "Conexión OBS".
+3. No toques nada, está todo por default. Pegá la clave de OBS en el espacio que dice "Clave del servidor WebSocket". Dejalo vacío si no tenes clave.
+4. Cuando pongas "Guardar y conectar", el estado de OBS (abajo del título) se va a poner en verde y te va a mostrar un mensaje que dice "Conectado a OBS".
+5. Streameá o grabá tranquilo :)
 
-NOTA: Asegurate de que tu IP y el puerto coincidan para que esto funcione :)
 ---
 ### 🛠️ Solución de Problemas Comunes (General)
 
