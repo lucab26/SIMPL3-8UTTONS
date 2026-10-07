@@ -27,7 +27,7 @@ let appConfig = {
 // Cargar la configuración de AppData si existe, o crearla con la clave predeterminada
 if (fs.existsSync(CONFIG_FILE)) {
     try {
-        appConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8'));
+        appConfig = { ...appConfig, ...JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf8')) };
     } catch (e) {
         console.error('Error leyendo simpl3_config.json, usando valores predeterminados.');
     }
@@ -40,16 +40,57 @@ if (fs.existsSync(CONFIG_FILE)) {
 }
 
 // Conexión con OBS utilizando la configuración dinámica
+const OBS_PASSWORD_PLACEHOLDER = 'TU CLAVE DE OBS ACÁ';
+let lastObsError = '';
+
+const OBS_TIMEOUT_MS = 5000;
+
+// Evita que una IP inalcanzable deje la conexión colgada para siempre
+function withTimeout(promise, ms) {
+    let timer;
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => reject(Object.assign(new Error('timeout'), { code: 'TIMEOUT' })), ms);
+    });
+    return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function connectOBS() {
     try {
         const { obs_ip, obs_port, obs_password } = appConfig;
-        await obs.connect(`ws://${obs_ip}:${obs_port}`, obs_password);
+        await withTimeout(obs.connect(`ws://${obs_ip}:${obs_port}`, obs_password), OBS_TIMEOUT_MS);
+        lastObsError = '';
         console.log('✅ Conectado a OBS WebSocket con éxito');
+        return true;
     } catch (error) {
+        if (error.code === 'TIMEOUT') {
+            // Si se agotó el tiempo, se descarta el intento a medias
+            try { obs.socket && obs.socket.terminate && obs.socket.terminate(); } catch (e) {}
+        }
+        lastObsError = error.code === 4009
+            ? 'Clave incorrecta'
+            : error.code === 'TIMEOUT'
+                ? 'OBS no respondió (revisá la IP y el puerto)'
+                : 'OBS no está abierto o el WebSocket no respondió';
         console.log('⚠ OBS no está abierto o WebSocket no respondió.');
+        return false;
     }
 }
 connectOBS();
+
+function isObsConnected() {
+    return !!(obs && obs.socket && obs.socket.readyState === 1);
+}
+
+// Guardar la configuración de OBS en AppData
+function saveAppConfig() {
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(appConfig, null, 4));
+}
+
+// Solo se permite leer/modificar la configuración de OBS desde esta misma PC
+function isLocalRequest(req) {
+    const ip = req.socket.remoteAddress || '';
+    return ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+}
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.json());
@@ -257,6 +298,44 @@ async function getAudioDeviceName(type, preferredName = '') {
 
     return null;
 }
+
+// CONFIGURACIÓN DE OBS EN TIEMPO REAL
+// Nunca se devuelve la clave: solo si hay una cargada.
+app.get('/api/obs/config', (req, res) => {
+    if (!isLocalRequest(req)) return res.sendStatus(403);
+    res.json({
+        ip: appConfig.obs_ip,
+        port: appConfig.obs_port,
+        hasPassword: !!appConfig.obs_password && appConfig.obs_password !== OBS_PASSWORD_PLACEHOLDER,
+        connected: isObsConnected(),
+        error: isObsConnected() ? '' : lastObsError
+    });
+});
+
+// Guarda IP / puerto / clave y reconecta a OBS al instante.
+// Si no se envía "password", se conserva la clave actual.
+app.post('/api/obs/config', async (req, res) => {
+    if (!isLocalRequest(req)) return res.sendStatus(403);
+
+    const { ip, port, password } = req.body || {};
+    if (typeof ip === 'string' && ip.trim()) appConfig.obs_ip = ip.trim();
+    if (port !== undefined && port !== '') {
+        const p = parseInt(port, 10);
+        if (!(p >= 1 && p <= 65535)) return res.status(400).json({ error: 'Puerto inválido' });
+        appConfig.obs_port = p;
+    }
+    if (typeof password === 'string') appConfig.obs_password = password;
+
+    try {
+        saveAppConfig();
+    } catch (e) {
+        return res.status(500).json({ error: 'No se pudo guardar la configuración: ' + e.message });
+    }
+
+    try { await withTimeout(obs.disconnect(), 2000); } catch (e) {}
+    const connected = await connectOBS();
+    res.json({ connected, error: connected ? '' : lastObsError });
+});
 
 // ESTADOS Y EJECUCIÓN
 // Obtener estado actual (Escena, Micrófono principal y Audio principal de OBS)

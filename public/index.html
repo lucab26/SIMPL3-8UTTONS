@@ -5,9 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>SIMPL3 8UTTONS ALPHA 1.0</title>
     <style>
+        /* TEMA DE LA INTERFAZ (se cambia en vivo desde el botón 🎨 Tema) */
+        :root {
+            --ui-bg: #0d0d0d;       /* fondo general */
+            --ui-panel: #1e1e1e;    /* menús, modales y botones flotantes */
+            --ui-btn: #121212;      /* fondo de los botones de la botonera */
+            --ui-text: #ffffff;     /* texto */
+            --ui-accent: #3498db;   /* acento: navegación y botones de menú */
+        }
+
         body {
-            background-color: #0d0d0d;
-            color: white;
+            background-color: var(--ui-bg);
+            color: var(--ui-text);
             font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
@@ -30,7 +39,8 @@
 		width: 50px;
 		height: 50px;
 		border-radius: 50%;
-		background-color: #2a2a2a;
+		background-color: color-mix(in srgb, var(--ui-panel) 82%, var(--ui-text));
+		color: var(--ui-text);
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -44,7 +54,7 @@
 
 		#fab:hover, #fab-linktree:hover {
 		transform: scale(1.1);
-		background-color: #3a3a3a;
+		background-color: color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text));
 }
 
 	/* El engranaje va abajo */
@@ -59,7 +69,7 @@
     bottom: 82px;
 }
         
-        #fab.active, #fab:active { opacity: 1; background: rgba(26, 26, 26, 0.95); }
+        #fab.active, #fab:active { opacity: 1; background: color-mix(in srgb, var(--ui-panel) 95%, transparent); }
 
         #controls {
             position: fixed;
@@ -68,10 +78,10 @@
             display: none;
             flex-direction: column;
             gap: 10px;
-            background: rgba(26, 26, 26, 0.95);
+            background: color-mix(in srgb, var(--ui-panel) 95%, transparent);
             padding: 15px;
             border-radius: 15px;
-            border: 2px solid #333;
+            border: 2px solid color-mix(in srgb, var(--ui-panel) 75%, var(--ui-text));
             box-shadow: 0 4px 15px rgba(0,0,0,0.8);
             z-index: 999;
             backdrop-filter: blur(5px);
@@ -80,8 +90,8 @@
         #controls.show { display: flex; }
 
         .menu-btn {
-            background: #2c3e50;
-            color: white;
+            background: color-mix(in srgb, var(--ui-accent) 45%, var(--ui-panel));
+            color: var(--ui-text);
             border: none;
             padding: 10px 14px;
             border-radius: 8px;
@@ -110,8 +120,8 @@
 
         /* ESTILO BASE DE BOTÓN */
         .btn {
-            background-color: #141414;
-            border: 2px solid #222;
+            background-color: var(--ui-btn);
+            border: 2px solid color-mix(in srgb, var(--ui-btn) 80%, var(--ui-text));
             border-radius: 14px;
             display: flex;
             flex-direction: column;
@@ -133,11 +143,11 @@
 
         /* ESTILO TIPO PHOTOSHOP (NEÓN INTERIOR) PARA BOTONES ACTIVOS */
         .btn:not(.empty):not(.btn-nav) {
-            background-color: #121212;
+            background-color: var(--ui-btn);
             border: 2px solid var(--btn-color, #00d8ff);
             box-shadow: inset 0 0 14px var(--btn-color, #00d8ff),
                         inset 0 0 3px var(--btn-color, #00d8ff);
-            color: #ffffff;
+            color: var(--ui-text);
         }
 
         .btn:active {
@@ -147,8 +157,8 @@
 
         /* CASILLEROS VACÍOS */
         .btn.empty {
-            background: rgba(255, 255, 255, 0.015);
-            border: 1px dashed #222;
+            background: color-mix(in srgb, var(--ui-text) 2%, transparent);
+            border: 1px dashed color-mix(in srgb, var(--ui-bg) 80%, var(--ui-text));
             box-shadow: none;
         }
 
@@ -163,9 +173,9 @@
 
         /* BOTONES DE NAVEGACIÓN (PÁGINAS) */
         .btn-nav {
-            background: #181818 !important;
-            border: 1px solid #333 !important;
-            color: #3498db;
+            background: color-mix(in srgb, var(--ui-btn) 92%, var(--ui-text)) !important;
+            border: 1px solid color-mix(in srgb, var(--ui-btn) 75%, var(--ui-text)) !important;
+            color: var(--ui-accent);
             box-shadow: none !important;
         }
 
@@ -192,15 +202,57 @@
             display: none; justify-content: center; align-items: center; z-index: 2000;
         }
         .modal {
-            background: #1e1e1e; padding: 20px; border-radius: 12px; width: 85%; max-width: 350px;
-            border: 1px solid #444; display: flex; flex-direction: column; gap: 12px;
+            background: var(--ui-panel); color: var(--ui-text); padding: 20px; border-radius: 12px; width: 85%; max-width: 350px;
+            border: 1px solid color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text)); display: flex; flex-direction: column; gap: 12px;
         }
         .modal h3 { margin: 0; text-align: center; font-size: 18px; }
-        .modal label { font-size: 13px; font-weight: bold; color: #aaa; }
+        .modal label { font-size: 13px; font-weight: bold; color: color-mix(in srgb, var(--ui-text) 65%, var(--ui-panel)); }
         .modal input, .modal select {
-            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #444;
-            background: #2a2a2a; color: white; box-sizing: border-box; font-size: 15px;
+            width: 100%; padding: 10px; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text));
+            background: color-mix(in srgb, var(--ui-panel) 88%, var(--ui-text)); color: var(--ui-text); box-sizing: border-box; font-size: 15px;
         }
+
+        /* PANEL DE TEMA */
+        .theme-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .theme-row label { flex: 1; }
+        .theme-row input[type="color"] { width: 70px; flex: none; }
+        .theme-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+        .theme-preset {
+            flex: 1 1 auto; padding: 8px 10px; border-radius: 8px; font-size: 12px; font-weight: bold;
+            cursor: pointer; border: 2px solid transparent; min-width: 80px; text-align: center;
+        }
+        .theme-preset:hover { border-color: var(--ui-accent); }
+
+        #themePanel, #obsPanel {
+            position: fixed; bottom: 70px; right: 15px; width: 270px; display: none;
+            flex-direction: column; gap: 10px; padding: 15px; border-radius: 15px; z-index: 1500;
+            background: color-mix(in srgb, var(--ui-panel) 96%, transparent); color: var(--ui-text);
+            border: 2px solid color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text));
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+            max-height: calc(100vh - 90px); overflow-y: auto;
+        }
+        #themePanel.show, #obsPanel.show { display: flex; }
+        #themePanel h3, #obsPanel h3 { margin: 0; text-align: center; font-size: 16px; }
+        #themePanel label, #obsPanel label { font-size: 13px; font-weight: bold; color: color-mix(in srgb, var(--ui-text) 65%, var(--ui-panel)); }
+        #obsPanel input {
+            width: 100%; padding: 9px; border-radius: 6px; box-sizing: border-box; font-size: 14px; margin-top: 4px;
+            border: 1px solid color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text));
+            background: color-mix(in srgb, var(--ui-panel) 88%, var(--ui-text)); color: var(--ui-text);
+        }
+        #obsPanel small { display: block; font-size: 11px; line-height: 1.35; color: color-mix(in srgb, var(--ui-text) 55%, var(--ui-panel)); }
+        #obsPanel .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        #obsPanel .modal-btns { margin-top: 4px; }
+        .obs-status { display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: bold; }
+        .obs-status .led { margin: 0; flex: none; }
+        .obs-pass-wrap { position: relative; }
+        .obs-pass-wrap input { padding-right: 38px; }
+        .obs-pass-wrap button {
+            position: absolute; right: 4px; top: 8px; width: 32px; height: 30px; border: none; border-radius: 6px;
+            background: transparent; color: var(--ui-text); cursor: pointer; font-size: 15px;
+        }
+        #themePanel input[type="color"] { height: 34px; padding: 2px; cursor: pointer; border-radius: 6px; border: 1px solid color-mix(in srgb, var(--ui-panel) 70%, var(--ui-text)); background: transparent; }
+        #themePanel .modal-btns { margin-top: 4px; }
+        #themePanel .modal-btns button { flex: 1; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; }
         .modal input[type="color"] { height: 40px; padding: 2px; cursor: pointer; }
         .modal-btns { display: flex; gap: 8px; margin-top: 10px; }
         .modal-btns button {
@@ -220,6 +272,51 @@
         <button class="menu-btn" id="btnToggleEdit" onclick="toggleEditMode()">✏️ Modo Edición: OFF</button>
         <button class="menu-btn" onclick="openFolderModal()">📁 Nueva Carpeta</button>
         <button class="menu-btn" onclick="openButtonModal()">🔲 Nuevo Botón</button>
+        <button class="menu-btn" onclick="toggleThemePanel()">🎨 Tema / Colores</button>
+        <button class="menu-btn" onclick="toggleObsPanel()">🎥 Conexión OBS</button>
+    </div>
+
+    <!-- Panel de conexión con OBS: la clave se aplica y reconecta al instante -->
+    <div id="obsPanel">
+        <h3>🎥 Conexión con OBS</h3>
+        <div class="obs-status"><span class="led led-off" id="obsLed"></span><span id="obsStatusText">Comprobando…</span></div>
+        <div>
+            <label for="obsIp">IP</label>
+            <input type="text" id="obsIp" placeholder="127.0.0.1" autocomplete="off">
+        </div>
+        <div>
+            <label for="obsPort">Puerto</label>
+            <input type="number" id="obsPort" placeholder="4455" min="1" max="65535">
+        </div>
+        <div>
+            <label for="obsPassword">Clave del servidor WebSocket</label>
+            <div class="obs-pass-wrap">
+                <input type="password" id="obsPassword" placeholder="Pegá la clave de OBS" autocomplete="off" spellcheck="false">
+                <button type="button" id="obsPassToggle" title="Mostrar / ocultar" onclick="toggleObsPasswordVisibility()">👁</button>
+            </div>
+            <small id="obsPassHint"></small>
+        </div>
+        <small>En OBS: Herramientas → Ajustes del Servidor WebSocket → Mostrar información de conexión → Copiar contraseña.</small>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="toggleObsPanel(false)">Cerrar</button>
+            <button class="btn-save" id="obsSaveBtn" onclick="saveObsConfig()">Guardar y conectar</button>
+        </div>
+    </div>
+
+    <!-- Panel de Tema (sin fondo oscuro para ver los cambios en vivo) -->
+    <div id="themePanel">
+        <h3>🎨 Colores de la interfaz</h3>
+        <div class="theme-row"><label for="themeBg">Fondo</label><input type="color" id="themeBg" data-var="--ui-bg"></div>
+        <div class="theme-row"><label for="themePanelColor">Menús y paneles</label><input type="color" id="themePanelColor" data-var="--ui-panel"></div>
+        <div class="theme-row"><label for="themeBtn">Fondo de botones</label><input type="color" id="themeBtn" data-var="--ui-btn"></div>
+        <div class="theme-row"><label for="themeText">Texto</label><input type="color" id="themeText" data-var="--ui-text"></div>
+        <div class="theme-row"><label for="themeAccent">Acento</label><input type="color" id="themeAccent" data-var="--ui-accent"></div>
+        <label>Temas rápidos</label>
+        <div class="theme-presets" id="themePresets"></div>
+        <div class="modal-btns">
+            <button class="btn-cancel" onclick="resetTheme()">Restaurar</button>
+            <button class="btn-save" onclick="toggleThemePanel(false)">Listo</button>
+        </div>
     </div>
 
     <div id="deck"></div>
@@ -846,6 +943,155 @@ async function fetchOBSStatus() {
                 loadData();
             }
         }
+
+        // ===== TEMA DE LA INTERFAZ (cambio de colores en tiempo real) =====
+        const THEME_KEY = 'simpl3_theme';
+        const DEFAULT_THEME = { '--ui-bg': '#0d0d0d', '--ui-panel': '#1e1e1e', '--ui-btn': '#121212', '--ui-text': '#ffffff', '--ui-accent': '#3498db' };
+        const THEME_PRESETS = {
+            'Oscuro':   DEFAULT_THEME,
+            'Medianoche': { '--ui-bg': '#0a0e1a', '--ui-panel': '#141c33', '--ui-btn': '#0e1426', '--ui-text': '#e6ecff', '--ui-accent': '#5b8cff' },
+            'Bosque':   { '--ui-bg': '#0b140f', '--ui-panel': '#16261b', '--ui-btn': '#0f1c14', '--ui-text': '#e8fff0', '--ui-accent': '#2ecc71' },
+            'Violeta':  { '--ui-bg': '#120a1c', '--ui-panel': '#22143a', '--ui-btn': '#190f2b', '--ui-text': '#f3e8ff', '--ui-accent': '#b66dff' },
+            'Rojo':     { '--ui-bg': '#160909', '--ui-panel': '#2a1111', '--ui-btn': '#1d0c0c', '--ui-text': '#ffecec', '--ui-accent': '#ff5252' },
+            'Claro':    { '--ui-bg': '#e9ecf1', '--ui-panel': '#ffffff', '--ui-btn': '#f6f7fa', '--ui-text': '#1b1f27', '--ui-accent': '#2563eb' }
+        };
+
+        function loadTheme() {
+            try { return { ...DEFAULT_THEME, ...JSON.parse(localStorage.getItem(THEME_KEY) || '{}') }; }
+            catch (e) { return { ...DEFAULT_THEME }; }
+        }
+
+        function applyTheme(theme, save = true) {
+            for (const [name, value] of Object.entries(theme)) {
+                document.documentElement.style.setProperty(name, value);
+            }
+            document.querySelectorAll('#themePanel input[type="color"]').forEach(inp => {
+                if (theme[inp.dataset.var]) inp.value = theme[inp.dataset.var];
+            });
+            if (save) {
+                try { localStorage.setItem(THEME_KEY, JSON.stringify(theme)); } catch (e) {}
+            }
+        }
+
+        function toggleThemePanel(force) {
+            const panel = document.getElementById('themePanel');
+            const show = typeof force === 'boolean' ? force : !panel.classList.contains('show');
+            panel.classList.toggle('show', show);
+            if (show) toggleObsPanel(false);
+            controls.classList.remove('show');
+            fab.classList.remove('active');
+        }
+
+        // ===== CONEXIÓN CON OBS (clave en tiempo real) =====
+        let obsPanelTimer = null;
+
+        function setObsStatus(connected, error) {
+            document.getElementById('obsLed').className = 'led ' + (connected ? 'led-on' : 'led-off');
+            document.getElementById('obsStatusText').innerText = connected ? 'Conectado a OBS' : ('Desconectado' + (error ? ' — ' + error : ''));
+        }
+
+        async function refreshObsConfig(fillFields) {
+            try {
+                const res = await fetch('/api/obs/config');
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                const cfg = await res.json();
+                setObsStatus(cfg.connected, cfg.error);
+                if (fillFields) {
+                    document.getElementById('obsIp').value = cfg.ip || '';
+                    document.getElementById('obsPort').value = cfg.port || '';
+                    document.getElementById('obsPassword').value = '';
+                    document.getElementById('obsPassword').placeholder = cfg.hasPassword ? '•••••• (vacío = conservar)' : 'Pegá la clave de OBS';
+                    document.getElementById('obsPassHint').innerText = cfg.hasPassword ? 'Hay una clave guardada.' : 'Todavía no cargaste ninguna clave.';
+                }
+            } catch (e) {
+                document.getElementById('obsLed').className = 'led led-off';
+                document.getElementById('obsStatusText').innerText = 'Solo se puede configurar desde la PC donde corre la app';
+            }
+        }
+
+        function toggleObsPanel(force) {
+            const panel = document.getElementById('obsPanel');
+            const show = typeof force === 'boolean' ? force : !panel.classList.contains('show');
+            panel.classList.toggle('show', show);
+            clearInterval(obsPanelTimer);
+            obsPanelTimer = null;
+            if (show) {
+                toggleThemePanel(false);
+                refreshObsConfig(true);
+                // Mientras el panel está abierto, el estado se actualiza solo
+                obsPanelTimer = setInterval(() => refreshObsConfig(false), 2500);
+            }
+            controls.classList.remove('show');
+            fab.classList.remove('active');
+        }
+
+        function toggleObsPasswordVisibility() {
+            const inp = document.getElementById('obsPassword');
+            inp.type = inp.type === 'password' ? 'text' : 'password';
+        }
+
+        async function saveObsConfig() {
+            const btn = document.getElementById('obsSaveBtn');
+            const body = {
+                ip: document.getElementById('obsIp').value,
+                port: document.getElementById('obsPort').value
+            };
+            const pass = document.getElementById('obsPassword').value;
+            if (pass !== '') body.password = pass;   // vacío = conservar la clave actual
+
+            btn.disabled = true;
+            btn.innerText = 'Conectando…';
+            try {
+                const res = await fetch('/api/obs/config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                    setObsStatus(false, data.error || ('Error ' + res.status));
+                } else {
+                    setObsStatus(data.connected, data.error);
+                    if (data.connected) {
+                        document.getElementById('obsPassword').value = '';
+                        document.getElementById('obsPassHint').innerText = 'Hay una clave guardada.';
+                        fetchOBSStatus();
+                    }
+                }
+            } catch (e) {
+                setObsStatus(false, 'No se pudo contactar con la app');
+            }
+            btn.disabled = false;
+            btn.innerText = 'Guardar y conectar';
+        }
+
+        document.getElementById('obsPassword').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') saveObsConfig();
+        });
+
+        function resetTheme() { applyTheme({ ...DEFAULT_THEME }); }
+
+        (function initTheme() {
+            // Selectores de color: cada movimiento actualiza la interfaz al instante
+            document.querySelectorAll('#themePanel input[type="color"]').forEach(inp => {
+                inp.addEventListener('input', () => {
+                    applyTheme({ ...loadTheme(), [inp.dataset.var]: inp.value });
+                });
+            });
+            // Temas rápidos
+            const presetsEl = document.getElementById('themePresets');
+            for (const [name, theme] of Object.entries(THEME_PRESETS)) {
+                const b = document.createElement('div');
+                b.className = 'theme-preset';
+                b.innerText = name;
+                b.style.background = theme['--ui-panel'];
+                b.style.color = theme['--ui-text'];
+                b.style.borderColor = theme['--ui-accent'];
+                b.addEventListener('click', () => applyTheme({ ...theme }));
+                presetsEl.appendChild(b);
+            }
+            applyTheme(loadTheme(), false);
+        })();
 
         // Inicio
         loadData();
